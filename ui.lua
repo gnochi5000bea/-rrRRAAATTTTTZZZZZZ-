@@ -562,213 +562,270 @@
 		}, true)
 
         function library:fov_circle(options)
-            local cfg = {
-                radius = options.radius or 100,
-                color = options.color or {rgb(255, 255, 255), rgb(255, 255, 255)},
-                color_transparency = options.color_transparency or {0, 0},
-                thickness = options.thickness or 1,
-                filled = options.filled or false,
-                fill_color = options.filled_color or {rgb(255, 255, 255), rgb(255, 255, 255)},
-                fill_transparency = options.fill_transparency or {numkey(0, 0), numkey(1, 0)},
-                spin = options.spin or false,
-                spin_speed = options.spin_speed or 1,
-                visible = options.visible or false,
-                outline = options.outline or false,
-                outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
-                outline_transparency = options.outline_transparency or {0, 0},
-                outline_thickness = options.outline_thickness or 1,
+			local cfg = {
+				radius = options.radius or 100,
+				color = options.color or {rgb(255, 255, 255), rgb(255, 255, 255)},
+				color_transparency = options.color_transparency or {0, 0},
+				thickness = options.thickness or 1,
+				filled = options.filled or false,
+				fill_color = options.fill_color or {rgb(255, 255, 255), rgb(255, 255, 255)},
+				fill_transparency = options.fill_transparency or {numkey(0, 0.95), numkey(1, 0.95)},
+				spin = options.spin or false,
+				spin_speed = options.spin_speed or 1,
+				visible = options.visible or false,
+				outline = options.outline or false,
+				outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
+				outline_transparency = options.outline_transparency or {0, 0},
+				outline_thickness = options.outline_thickness or 1,
 
-                -- ignore
-                items = {},
-                fov_connection = nil
-            }
+				override_position = options.override_position or false,
+				position = options.position or dim2(0, 0, 0, 0),
 
-            local items = cfg.items do 
-                items.circle = library:create("Frame", {
-                    Parent = fov_sgui,
-                    Name = "",
-                    Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2),
-                    Position = dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
-                    AnchorPoint = vec2(0.5, 0.5),
-                    BackgroundTransparency = 1,
-                    Visible = cfg.visible
-                })
 
-                items.fov_circle = library:create("Frame", {
-                    Parent = items.circle,
-                    Name = "",
-                    Size = dim2(1, 0, 1, 0),
-                    Position = dim2(0.5, 0, 0.5, 0),
-                    AnchorPoint = vec2(0.5, 0.5),
-                    BackgroundColor3 = cfg.fill_color[1],
-                    BackgroundTransparency = cfg.filled and 0 or 1,
-                    Visible = true,
-                    ZIndex = 3
-                })
+				-- ignore
+				items = {},
+				fov_connection = nil
+			}
 
-                local UICorner = library:create("UICorner", {
-                    Parent = items.fov_circle,
-                    CornerRadius = dim(1, 0)
-                })
+			local items = cfg.items do 
+				items.circle = library:create("Frame", {
+					Parent = fov_sgui,
+					Name = "",
+					Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2),
+					Position = dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
+					AnchorPoint = vec2(0.5, 0.5),
+					BackgroundTransparency = 1,
+					Visible = cfg.visible
+				})
 
-                local UIGradientFovCircle = library:create("UIGradient", {
-                    Parent = items.fov_circle,
+				local outline_size_offset = (cfg.thickness + cfg.outline_thickness) * 2
+				items.outline_outer = library:create("Frame", {
+					Parent = items.circle,
+					Name = "",
+					Size = dim2(1, outline_size_offset, 1, outline_size_offset),
+					Position = dim2(0.5, 0, 0.5, 0),
+					AnchorPoint = vec2(0.5, 0.5),
+					BackgroundTransparency = 1,
+					Visible = cfg.outline,
+					ZIndex = 1
+				})
+
+				local UICornerOuterOutline = library:create("UICorner", {
+					Parent = items.outline_outer,
+					CornerRadius = dim(1, 0)
+				})
+
+				local UIStrokeOuterOutline = library:create("UIStroke", {
+					Parent = items.outline_outer,
+					Color = cfg.outline_color[1],
+					Thickness = cfg.outline_thickness,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+				})
+
+				local UIGradientOuterOutline = library:create("UIGradient", {
+					Parent = UIStrokeOuterOutline,
+					Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2]),
+					Transparency = numseq({
+						numkey(0, cfg.outline_transparency[1]),
+						numkey(1, cfg.outline_transparency[2])
+					})
+				})
+
+				items.fov_circle = library:create("Frame", {
+					Parent = items.circle,
+					Name = "",
+					Size = dim2(1, 0, 1, 0),
+					Position = dim2(0.5, 0, 0.5, 0),
+					AnchorPoint = vec2(0.5, 0.5),
+					BackgroundColor3 = cfg.fill_color[1],
+					BackgroundTransparency = cfg.filled and 0 or 1,
+					Visible = true,
+					ZIndex = 3
+				})
+
+				local UICorner = library:create("UICorner", {
+					Parent = items.fov_circle,
+					CornerRadius = dim(1, 0)
+				})
+
+				local UIGradientFovCircle = library:create("UIGradient", {
+					Parent = items.fov_circle,
 					Color = rgbseq(cfg.fill_color[1], cfg.fill_color[2]),
-                    Transparency = numseq({
-                        numkey(0, cfg.fill_transparency[1]),
-                        numkey(1, cfg.fill_transparency[2])
-                    })
-                })
+					Transparency = numseq(cfg.fill_transparency)
+				})
 
-                local UIStroke = library:create("UIStroke", {
-                    Parent = items.fov_circle,
-                    Color = cfg.color[1],
-                    Thickness = cfg.thickness,
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-                })
+				local UIStroke = library:create("UIStroke", {
+					Parent = items.fov_circle,
+					Color = cfg.color[1],
+					Thickness = cfg.thickness,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Contextual
+				})
 
-                local UIGradientStroke = library:create("UIGradient", {
-                    Parent = UIStroke,
-                    Color = ColorSequence.new(cfg.color[1], cfg.color[2]),
-                    Transparency = numseq({
-                        numkey(0, cfg.color_transparency[1]),
-                        numkey(1, cfg.color_transparency[2])
-                    })
-                })
-                
-                local UIOutline = library:create("UIStroke", {
-                    Parent = items.fov_circle,
-                    Color = cfg.outline_color[1],
-                    Thickness = cfg.thickness + (cfg.outline_thickness * 2),
-                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
-                    Enabled = cfg.outline
-                })
+				local UIGradientStroke = library:create("UIGradient", {
+					Parent = UIStroke,
+					Color = rgbseq(cfg.color[1], cfg.color[2]),
+					Transparency = numseq({
+						numkey(0, cfg.color_transparency[1]),
+						numkey(1, cfg.color_transparency[2])
+					})
+				})
+				
+				local UIOutlineInner = library:create("UIStroke", {
+					Parent = items.fov_circle,
+					Color = cfg.outline_color[1],
+					Thickness = cfg.outline_thickness,
+					ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+					Enabled = cfg.outline
+				})
 
-                local UIGradientOutline = library:create("UIGradient", {
-                    Parent = UIOutline,
-                    Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2]),
-                    Transparency = numseq({
-                        numkey(0, cfg.outline_transparency[1]),
-                        numkey(1, cfg.outline_transparency[2])
-                    })
-                })
-                
-                items.UICorner = UICorner
-                items.UIGradientFovCircle = UIGradientFovCircle
-                items.UIStroke = UIStroke
-                items.UIGradientStroke = UIGradientStroke
-                items.UIOutline = UIOutline
-                items.UIGradientOutline = UIGradientOutline
-            end
-            
-            
-            cfg.fov_connection = library:connection(run.RenderStepped, function()
-                if cfg.spin then
-                    items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
-                    items.UIGradientStroke.Rotation = (items.UIGradientStroke.Rotation + 0.5) % 360
-                    items.UIGradientFovCircle.Rotation = (items.UIGradientFovCircle.Rotation + 0.2) % 360
-                end
+				local UIGradientOutlineInner = library:create("UIGradient", {
+					Parent = UIOutlineInner,
+					Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2]),
+					Transparency = numseq({
+						numkey(0, cfg.outline_transparency[1]),
+						numkey(1, cfg.outline_transparency[2])
+					})
+				})
+				
+				items.UICorner = UICorner
+				items.UICornerOuterOutline = UICornerOuterOutline
+				items.UIGradientFovCircle = UIGradientFovCircle
+				items.UIStroke = UIStroke
+				items.UIGradientStroke = UIGradientStroke
+				items.UIStrokeOuterOutline = UIStrokeOuterOutline
+				items.UIGradientOuterOutline = UIGradientOuterOutline
+				items.UIOutlineInner = UIOutlineInner
+				items.UIGradientOutlineInner = UIGradientOutlineInner
+			end
+			
+			
+			cfg.fov_connection = library:connection(run.RenderStepped, function()
+				if cfg.spin then
+					items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
+					items.UIGradientStroke.Rotation = (items.UIGradientStroke.Rotation + 0.5) % 360
+					items.UIGradientFovCircle.Rotation = (items.UIGradientFovCircle.Rotation + 0.2) % 360
 
-                if cfg.visible then
+					if cfg.outline then
+						items.UIGradientOuterOutline.Rotation = (items.UIGradientOuterOutline.Rotation + 0.3) % 360
+						items.UIGradientOutlineInner.Rotation = (items.UIGradientOutlineInner.Rotation + 0.3) % 360
+					end
+				end
+
+				if cfg.visible then
+					if cfg.override_position then
+						items.circle.Position = cfg.position
+						
+						return
+					end
+
 					local mouse_pos = uis:GetMouseLocation() 
-                    items.circle.Position = dim2(0, mouse_pos.X, 0, mouse_pos.Y - gui_offset)
-                end
-            end)
-            
-            function cfg:update_fov(args)
-                if args.radius then
-                    cfg.radius = args.radius
-                    items.circle.Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2)
-                end
-                
-                if args.color then
-                    cfg.color = args.color
-                    items.UIStroke.Color = cfg.color[1]
-                    items.UIGradientStroke.Color = rgbseq(cfg.color[1], cfg.color[2])
-                end
-                
-                if args.color_transparency then
-                    cfg.color_transparency = args.color_transparency
-                    items.UIGradientStroke.Transparency = numseq({
-                        numkey(0, cfg.color_transparency[1]),
-                        numkey(1, cfg.color_transparency[2])
-                    })
-                end
-                
-                if args.thickness then
-                    cfg.thickness = args.thickness
-                    items.UIStroke.Thickness = cfg.thickness
-                    items.UIOutline.Thickness = cfg.thickness + (cfg.outline_thickness * 2)
-                end
-                
-                if args.filled ~= nil then
-                    cfg.filled = args.filled
-                    items.fov_circle.BackgroundTransparency = cfg.filled and 0 or 1
-                end
-                
-                if args.fill_color then
-                    cfg.fill_color = args.fill_color
-                    items.fov_circle.BackgroundColor3 = cfg.fill_color[1]
+					items.circle.Position = dim2(0, mouse_pos.X, 0, mouse_pos.Y - gui_offset)
+				end
+			end)
+			
+			function cfg:update_fov(args)
+				if args.radius then
+					cfg.radius = args.radius
+					items.circle.Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2)
+				end
+				
+				if args.color then
+					cfg.color = args.color
+					items.UIStroke.Color = cfg.color[1]
+					items.UIGradientStroke.Color = rgbseq(cfg.color[1], cfg.color[2])
+				end
+				
+				if args.color_transparency then
+					cfg.color_transparency = args.color_transparency
+					items.UIGradientStroke.Transparency = numseq({
+						numkey(0, cfg.color_transparency[1]),
+						numkey(1, cfg.color_transparency[2])
+					})
+				end
+				
+				if args.thickness then
+					cfg.thickness = args.thickness
+					items.UIStroke.Thickness = cfg.thickness
+					
+					local outline_size_offset = (cfg.thickness + cfg.outline_thickness) * 2
+					items.outline_outer.Size = dim2(1, outline_size_offset, 1, outline_size_offset)
+				end
+				
+				if args.filled ~= nil then
+					cfg.filled = args.filled
+					items.fov_circle.BackgroundTransparency = cfg.filled and 0 or 1
+				end
+				
+				if args.fill_color then
+					cfg.fill_color = args.fill_color
+					items.fov_circle.BackgroundColor3 = cfg.fill_color[1]
 					items.UIGradientFovCircle.Color = rgbseq(cfg.fill_color[1], cfg.fill_color[2])
-                end
-                
-                if args.fill_transparency then
-                    cfg.fill_transparency = args.fill_transparency
-                    items.UIGradientFovCircle.Transparency = numseq({
-                        numkey(0, cfg.fill_transparency[1]),
-                        numkey(1, cfg.fill_transparency[2])
-                    })
-                end
-                
-                if args.outline ~= nil then
-                    cfg.outline = args.outline
-                    items.UIOutline.Enabled = cfg.outline
-                end
-                
-                if args.outline_color then
-                    cfg.outline_color = args.outline_color
-                    items.UIOutline.Color = cfg.outline_color[1]
-                    items.UIGradientOutline.Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2])
-                end
-                
-                if args.outline_transparency then
-                    cfg.outline_transparency = args.outline_transparency
-                    items.UIGradientOutline.Transparency = numseq({
-                        numkey(0, cfg.outline_transparency[1]),
-                        numkey(1, cfg.outline_transparency[2])
-                    })
-                end
-                
-                if args.outline_thickness then
-                    cfg.outline_thickness = args.outline_thickness
-                    items.UIOutline.Thickness = cfg.thickness + (cfg.outline_thickness * 2)
-                end
-                
-                if args.spin ~= nil then
-                    cfg.spin = args.spin
+				end
+				
+				if args.fill_transparency then
+					cfg.fill_transparency = args.fill_transparency
+					items.UIGradientFovCircle.Transparency = numseq(cfg.fill_transparency)
+				end
+				
+				if args.outline ~= nil then
+					cfg.outline = args.outline
+					items.outline_outer.Visible = cfg.outline
+					items.UIOutlineInner.Enabled = cfg.outline
+				end
+				
+				if args.outline_color then
+					cfg.outline_color = args.outline_color
+					items.UIStrokeOuterOutline.Color = cfg.outline_color[1]
+					items.UIGradientOuterOutline.Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2])
+					items.UIOutlineInner.Color = cfg.outline_color[1]
+					items.UIGradientOutlineInner.Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2])
+				end
+				
+				if args.outline_transparency then
+					cfg.outline_transparency = args.outline_transparency
+					items.UIGradientOuterOutline.Transparency = numseq({
+						numkey(0, cfg.outline_transparency[1]),
+						numkey(1, cfg.outline_transparency[2])
+					})
+					items.UIGradientOutlineInner.Transparency = numseq({
+						numkey(0, cfg.outline_transparency[1]),
+						numkey(1, cfg.outline_transparency[2])
+					})
+				end
+				
+				if args.outline_thickness then
+					cfg.outline_thickness = args.outline_thickness
+					
+					local outline_size_offset = (cfg.thickness + cfg.outline_thickness) * 2
+					items.outline_outer.Size = dim2(1, outline_size_offset, 1, outline_size_offset)
+					items.UIStrokeOuterOutline.Thickness = cfg.outline_thickness
+					items.UIOutlineInner.Thickness = cfg.outline_thickness
+				end
+				
+				if args.spin ~= nil then
+					cfg.spin = args.spin
 
 					if not cfg.spin then
 						items.circle.Rotation = 0
+						items.UIGradientStroke.Rotation = 0
+						items.UIGradientFovCircle.Rotation = 0
+						items.UIGradientOuterOutline.Rotation = 0
+						items.UIGradientOutlineInner.Rotation = 0
 					end
-                end
-                
-                if args.spin_speed then
-                    cfg.spin_speed = args.spin_speed
-                end
-                
-                if args.visible ~= nil then
-                    cfg.visible = args.visible
-                    items.circle.Visible = args.visible
-                    items.fov_circle.Visible = args.visible
-                end
-                
-                if args.position then
-                    cfg.position = args.position
-                end
-            end
-            
-            return cfg
-        end
+				end
+				
+				if args.spin_speed then
+					cfg.spin_speed = args.spin_speed
+				end
+				
+				if args.visible ~= nil then
+					cfg.visible = args.visible
+					items.circle.Visible = args.visible
+				end
+			end
+			
+			return cfg
+		end
 
 		local tooltip_sgui = library:create("ScreenGui", {
 			Enabled = true,
