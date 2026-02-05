@@ -768,31 +768,6 @@
 						Name = "",
 						LineJoinMode = Enum.LineJoinMode.Miter
 					})
-
-                    if cfg.animated_name then
-                        task.spawn(function()
-                            local title_string = ""
-                            local title = cfg.name
-
-                            while true do
-                                for i = 1, #title do
-                                    title_string = title_string .. title:sub(i, i)
-                                    items.text.Text = title_string
-                                    
-                                    task.wait(1)
-                                end
-
-                                for i = #title - 1, 1, -1 do
-                                    title_string = title:sub(1, i)
-                                    items.text.Text = title_string
-
-                                    task.wait(1)
-                                end
-
-                                title_string = ""
-                            end
-                        end)
-                    end
 					
 					items.UIPadding = library:create("UIPadding", {
 						Parent = items.window_holder,
@@ -951,6 +926,31 @@
 			items.button.MouseButton1Click:Connect(function()
 				items.sgui.Enabled = not items.sgui.Enabled
 			end)
+
+            if cfg.animated_name then
+                task.spawn(function()
+                    local title_string = ""
+                    local title = cfg.name
+
+                    while true do
+                        for i = 1, #title do
+                            title_string = title_string .. title:sub(i, i)
+                            items.text.Text = title_string
+                            
+                            task.wait(1)
+                        end
+
+                        for i = #title - 1, 1, -1 do
+                            title_string = title:sub(1, i)
+                            items.text.Text = title_string
+
+                            task.wait(1)
+                        end
+
+                        title_string = ""
+                    end
+                end)
+            end
 
             cfg.change_title = function(input)
                 items.text.Text = input
