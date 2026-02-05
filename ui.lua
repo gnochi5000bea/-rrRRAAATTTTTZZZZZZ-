@@ -650,6 +650,8 @@
 				size = options.size or dim2(0, 530, 0, 590),
 				position = options.position or dim2(0, 500, 0, 500),
 				anchor_point = options.anchor_point or vec2(0, 0),
+                animated_name = options.animated_name or false,
+                animation_speed = options.animation_speed or 1,
 
 				-- button
 				image = options.image or "rbxassetid://79856374238119",
@@ -766,6 +768,31 @@
 						Name = "",
 						LineJoinMode = Enum.LineJoinMode.Miter
 					})
+
+                    if cfg.animated_name then
+                        task.spawn(function()
+                            local title_string = ""
+                            local title = cfg.name
+
+                            while true do
+                                for i = 1, #title do
+                                    title_string = title_string .. title:sub(i, i)
+                                    items.text.Text = title_string
+                                    
+                                    task.wait(1)
+                                end
+
+                                for i = #title - 1, 1, -1 do
+                                    title_string = title:sub(1, i)
+                                    items.text.Text = title_string
+
+                                    task.wait(1)
+                                end
+
+                                title_string = ""
+                            end
+                        end)
+                    end
 					
 					items.UIPadding = library:create("UIPadding", {
 						Parent = items.window_holder,
