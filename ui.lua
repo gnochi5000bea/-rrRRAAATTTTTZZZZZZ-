@@ -714,7 +714,7 @@
 				if cfg.visible then
 					if cfg.override_position then
 						items.circle.Position = cfg.position
-						
+
 						return
 					end
 
@@ -764,7 +764,10 @@
 				
 				if args.fill_transparency then
 					cfg.fill_transparency = args.fill_transparency
-					items.UIGradientFovCircle.Transparency = numseq(cfg.fill_transparency)
+					items.UIGradientFovCircle.Transparency = numseq({
+						numkey(0, cfg.fill_transparency[1]),
+						numkey(1, cfg.fill_transparency[2])
+					})
 				end
 				
 				if args.outline ~= nil then
