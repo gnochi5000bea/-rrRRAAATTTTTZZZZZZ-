@@ -533,7 +533,7 @@
 			library:apply_theme(stroke, "text_outline", "Color")
 		end
 
-		function library:create(instance, options)
+		function library:create(instance, options, ignoreguis)
 			local ins = Instance.new(instance) 
 			
 			for prop, value in next, options do 
@@ -543,8 +543,10 @@
 			if instance == "TextLabel" or instance == "TextButton" or instance == "TextBox" then 	
 				library:apply_theme(ins, "text", "TextColor3")
 				library:apply_stroke(ins)
-			elseif instance == "ScreenGui" then 
-				insert(library.guis, ins)
+			elseif instance == "ScreenGui" then
+                if not ignoreguis then
+				    insert(library.guis, ins)
+                end
 			end
 			
 			return ins 
@@ -557,7 +559,7 @@
 			Parent = gethui(),
 			Name = "",
 			DisplayOrder = 999999999, 
-		})
+		}, true)
 
         function library:fov_circle(options)
             local cfg = {
