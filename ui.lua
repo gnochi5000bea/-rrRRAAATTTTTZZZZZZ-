@@ -568,12 +568,11 @@
                 color_transparency = options.color_transparency or {0, 0},
                 thickness = options.thickness or 1,
                 filled = options.filled or false,
-                fill_color = options.filled_color or rgb(255, 255, 255),
+                fill_color = options.filled_color or {rgb(255, 255, 255), rgb(255, 255, 255)},
                 fill_transparency = options.fill_transparency or {numkey(0, 0), numkey(1, 0)},
                 spin = options.spin or false,
                 spin_speed = options.spin_speed or 1,
                 visible = options.visible or false,
-                position = options.position or dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
                 outline = options.outline or false,
                 outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
                 outline_transparency = options.outline_transparency or {0, 0},
@@ -589,7 +588,7 @@
                     Parent = fov_sgui,
                     Name = "",
                     Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2),
-                    Position = cfg.position,
+                    Position = dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
                     AnchorPoint = vec2(0.5, 0.5),
                     BackgroundTransparency = 1,
                     Visible = cfg.visible
@@ -614,7 +613,11 @@
 
                 local UIGradientFovCircle = library:create("UIGradient", {
                     Parent = items.fov_circle,
-                    Transparency = numseq(cfg.fill_transparency)
+					Color = rgbseq(cfg.fill_color[1], cfg.fill_color[2]),
+                    Transparency = numseq({
+                        numkey(0, cfg.fill_transparency[1]),
+                        numkey(1, cfg.fill_transparency[2])
+                    })
                 })
 
                 local UIStroke = library:create("UIStroke", {
@@ -667,7 +670,8 @@
                 end
 
                 if cfg.visible then
-                    items.circle.Position = cfg.position
+					local mouse_pos = uis:GetMouseLocation() 
+                    items.circle.Position = dim2(0, mouse_pos.X, 0, mouse_pos.Y - gui_offset)
                 end
             end)
             
@@ -704,17 +708,16 @@
                 
                 if args.fill_color then
                     cfg.fill_color = args.fill_color
-                    items.fov_circle.BackgroundColor3 = cfg.fill_color
+                    items.fov_circle.BackgroundColor3 = cfg.fill_color[1]
+					items.UIGradientFovCircle.Color = rgbseq(cfg.fill_color[1], cfg.fill_color[2])
                 end
                 
                 if args.fill_transparency then
                     cfg.fill_transparency = args.fill_transparency
-
-                    if cfg.filled then
-                        items.fov_circle.BackgroundTransparency = cfg.fill_transparency
-                    end
-
-                    items.UIGradientFovCircle.Transparency = numseq(cfg.fill_transparency)
+                    items.UIGradientFovCircle.Transparency = numseq({
+                        numkey(0, cfg.fill_transparency[1]),
+                        numkey(1, cfg.fill_transparency[2])
+                    })
                 end
                 
                 if args.outline ~= nil then
@@ -743,6 +746,10 @@
                 
                 if args.spin ~= nil then
                     cfg.spin = args.spin
+
+					if not cfg.spin then
+						items.circle.Rotation = 0
+					end
                 end
                 
                 if args.spin_speed then
