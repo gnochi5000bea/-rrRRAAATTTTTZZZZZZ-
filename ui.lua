@@ -937,14 +937,14 @@
                             title_string = title_string .. title:sub(i, i)
                             items.text.Text = title_string
                             
-                            task.wait(1)
+                            task.wait(cfg.animation_speed)
                         end
 
                         for i = #title - 1, 1, -1 do
                             title_string = title:sub(1, i)
                             items.text.Text = title_string
 
-                            task.wait(1)
+                            task.wait(cfg.animation_speed)
                         end
 
                         title_string = ""
