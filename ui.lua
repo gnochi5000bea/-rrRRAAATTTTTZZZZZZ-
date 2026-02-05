@@ -774,6 +774,98 @@
             return cfg
         end
 
+		local tooltip_sgui = library:create("ScreenGui", {
+			Enabled = true,
+			Parent = gethui(),
+			Name = "",
+			DisplayOrder = 500, 
+		})
+
+		function library:tool_tip(options) 
+			local cfg = {
+				name = options.name or "hi", 
+				path = options.path or nil, 
+			}
+
+			if cfg.path then 
+				local watermark_outline = library:create("Frame", {
+					Parent = tooltip_sgui,
+					Name = "",
+					Size = dim2(0, 0, 0, 22),
+					Position = dim2(0, 500, 0, 300),
+					BorderColor3 = rgb(0, 0, 0),
+					BorderSizePixel = 0,
+					Visible = false,
+					AutomaticSize = Enum.AutomaticSize.X,
+					BackgroundColor3 = themes.preset.outline
+				})
+				
+				local watermark_inline = library:create("Frame", {
+					Parent = watermark_outline,
+					Name = "",
+					Position = dim2(0, 1, 0, 1),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = themes.preset.inline
+				})
+				
+				local watermark_background = library:create("Frame", {
+					Parent = watermark_inline,
+					Name = "",
+					Position = dim2(0, 1, 0, 1),
+					BorderColor3 = rgb(0, 0, 0),
+					Size = dim2(1, -2, 1, -2),
+					BorderSizePixel = 0,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				
+				local UIGradient = library:create("UIGradient", {
+					Parent = watermark_background,
+					Name = "",
+					Color = rgbseq{rgbkey(0, rgb(41, 41, 55)), rgbkey(1, rgb(35, 35, 47))}
+				}); library:apply_theme(UIGradient, "contrast", "Color")
+				
+				local text = library:create("TextLabel", {
+					Parent = watermark_background,
+					Name = "",
+					FontFace = library.font,
+					TextColor3 = themes.preset.text,
+					BorderColor3 = rgb(0, 0, 0),
+					Text = " " .. cfg.name .. " ",
+					Size = dim2(0, 0, 1, 0),
+					BackgroundTransparency = 1,
+					Position = dim2(0, 0, 0, -1),
+					BorderSizePixel = 0,
+					AutomaticSize = Enum.AutomaticSize.X,
+					TextSize = 12,
+					BackgroundColor3 = rgb(255, 255, 255)
+				})
+				
+				local UIStroke = library:create("UIStroke", {
+					Parent = text,
+					Name = "",
+					LineJoinMode = Enum.LineJoinMode.Miter
+				})
+
+				cfg.path.MouseEnter:Connect(function()
+					watermark_outline.Visible = true 
+				end)   
+
+				cfg.path.MouseLeave:Connect(function()
+					watermark_outline.Visible = false 
+				end)
+
+				library:connection(uis.InputChanged, function(input)
+					if watermark_outline.Visible and input.UserInputType == Enum.UserInputType.MouseMovement then
+						watermark_outline.Position = dim_offset(input.Position.X + 10, input.Position.Y + 10)
+					end
+				end)
+			end 
+			
+			return cfg
+		end 
+
 		function library:panel(options) 
 			local cfg = {
 				name = options.text or options.name or "Window", 
