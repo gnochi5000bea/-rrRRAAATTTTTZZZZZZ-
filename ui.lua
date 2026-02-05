@@ -703,7 +703,7 @@
                 
                 if args.filled ~= nil then
                     cfg.filled = args.filled
-                    items.fov_circle.BackgroundTransparency = cfg.filled and cfg.fill_transparency or 1
+                    items.fov_circle.BackgroundTransparency = cfg.filled and 0 or 1
                 end
                 
                 if args.fill_color then
