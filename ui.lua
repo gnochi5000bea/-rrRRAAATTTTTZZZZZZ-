@@ -764,6 +764,7 @@
                 if args.visible ~= nil then
                     cfg.visible = args.visible
                     items.circle.Visible = args.visible
+                    items.fov_circle.Visible = args.visible
                 end
                 
                 if args.position then
