@@ -924,6 +924,10 @@
 			items.button.MouseButton1Click:Connect(function()
 				items.sgui.Enabled = not items.sgui.Enabled
 			end)
+
+            cfg.change_title = function(input)
+                items.text.Text = input
+            end
 			
 			return setmetatable(cfg, library)
 		end 
@@ -1823,9 +1827,7 @@
 				end})
 			--  
 
-            window.change_title = function(input)
-                main_window.items.text.Text = input
-            end
+            window.change_title = main_window.change_title
 
 			return setmetatable(window, library)
 		end
@@ -2280,7 +2282,7 @@
 			end 
 
 			cfg.change_health = function()
-				if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] then 
+				if flags[ "healthbar_holder" ] and flags[ "healthbar_holder" ].Parent ~= objects[ "holder" ] or not character then 
 					return 
 				end
 
