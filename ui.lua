@@ -670,7 +670,7 @@
                 end
             end)
             
-            cfg.update_fov = function(args)
+            function cfg:update_fov(args)
                 if args.radius then
                     cfg.radius = args.radius
                     items.circle.Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2)
