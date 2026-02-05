@@ -924,10 +924,6 @@
 			items.button.MouseButton1Click:Connect(function()
 				items.sgui.Enabled = not items.sgui.Enabled
 			end)
-
-            cfg.change_title = function(input)
-                items.text.Text = input
-            end
 			
 			return setmetatable(cfg, library)
 		end 
@@ -1826,6 +1822,10 @@
 					library.prioritize(text)
 				end})
 			--  
+
+            window.change_title = function(input)
+                main_window.items.text.Text = input
+            end
 
 			return setmetatable(window, library)
 		end
