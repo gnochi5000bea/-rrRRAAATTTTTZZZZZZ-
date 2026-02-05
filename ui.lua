@@ -569,7 +569,7 @@
                 thickness = options.thickness or 1,
                 filled = options.filled or false,
                 fill_color = options.filled_color or rgb(255, 255, 255),
-                fill_transparency = options.fill_transparency or 0.5,
+                fill_transparency = options.fill_transparency or {0, 0},
                 spin = options.spin or false,
                 spin_speed = options.spin_speed or 1,
                 visible = options.visible or false,
@@ -578,7 +578,6 @@
                 outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
                 outline_transparency = options.outline_transparency or {0, 0},
                 outline_thickness = options.outline_thickness or 1,
-                rotation = options.rotation or 0,
 
                 -- ignore
                 items = {},
@@ -593,8 +592,7 @@
                     Position = cfg.position,
                     AnchorPoint = vec2(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Visible = cfg.visible,
-                    Rotation = cfg.rotation
+                    Visible = cfg.visible
                 })
 
                 items.fov_circle = library:create("Frame", {
@@ -660,11 +658,12 @@
                 items.UIGradientOutline = UIGradientOutline
             end
             
-            local base_rotation = cfg.rotation
             
             cfg.fov_connection = library:connection(run.RenderStepped, function()
                 if cfg.spin then
-                    items.circle.Rotation = base_rotation + ((items.circle.Rotation + cfg.spin_speed) % 360)
+                    items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
+                    strokeGradient.Rotation = (strokeGradient.Rotation + 0.5) % 360
+                    mainGradient.Rotation = (mainGradient.Rotation + 0.2) % 360
                 end
 
                 if cfg.visible then
@@ -742,21 +741,8 @@
                     items.UIOutline.Thickness = cfg.thickness + (cfg.outline_thickness * 2)
                 end
                 
-                if args.rotation then
-                    cfg.rotation = args.rotation
-                    base_rotation = cfg.rotation
-
-                    if not cfg.spin then
-                        items.circle.Rotation = cfg.rotation
-                    end
-                end
-                
                 if args.spin ~= nil then
                     cfg.spin = args.spin
-
-                    if not cfg.spin then
-                        items.circle.Rotation = base_rotation
-                    end
                 end
                 
                 if args.spin_speed then
