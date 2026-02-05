@@ -562,7 +562,8 @@
         function library:fov_circle(options)
             local cfg = {
                 radius = options.radius or 100,
-                color = options.color or rgb(255, 255, 255),
+                color = options.color or {rgb(255, 255, 255), rgb(255, 255, 255)},
+                color_transparency = options.color_transparency or {0, 0},
                 thickness = options.thickness or 1,
                 filled = options.filled or false,
                 fill_color = options.filled_color or rgb(255, 255, 255),
@@ -571,9 +572,15 @@
                 spin_speed = options.spin_speed or 1,
                 visible = options.visible or false,
                 position = options.position or dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
+                outline = options.outline or false,
+                outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
+                outline_transparency = options.outline_transparency or {0, 0},
+                outline_thickness = options.outline_thickness or 1,
+                rotation = options.rotation or 0,
 
                 -- ignore
-                items = {}
+                items = {},
+                fov_connection = nil
             }
 
             local items = cfg.items do 
@@ -584,7 +591,8 @@
                     Position = cfg.position,
                     AnchorPoint = vec2(0.5, 0.5),
                     BackgroundTransparency = 1,
-                    Visible = cfg.visible
+                    Visible = cfg.visible,
+                    Rotation = cfg.rotation
                 })
 
                 items.fov_circle = library:create("Frame", {
@@ -594,8 +602,8 @@
                     Position = dim2(0.5, 0, 0.5, 0),
                     AnchorPoint = vec2(0.5, 0.5),
                     BackgroundColor3 = cfg.fill_color,
-                    BackgroundTransparency = cfg.fill_transparency,
-                    Visible = cfg.visible,
+                    BackgroundTransparency = cfg.filled and cfg.fill_transparency or 1,
+                    Visible = true,
                     ZIndex = 3
                 })
 
@@ -604,29 +612,57 @@
                     CornerRadius = dim(1, 0)
                 })
 
-                items.fov_circle_uigradient = library:create("UIGradient", {
+                local UIGradientFovCircle = library:create("UIGradient", {
                     Parent = items.fov_circle,
-                    Transparency = cfg.fill_transparency
+                    Transparency = numseq(cfg.fill_transparency)
                 })
 
-                items.uistroke = library:create("UIStroke", {
+                local UIStroke = library:create("UIStroke", {
                     Parent = items.fov_circle,
-                    Color = cfg.color,
+                    Color = cfg.color[1],
                     Thickness = cfg.thickness,
                     ApplyStrokeMode = Enum.ApplyStrokeMode.Border
                 })
 
-                items.uistroke_uigradient = library:create("UIGradient", {
-                    Parent = items.uistroke,
-                    Transparency = cfg.fill_transparency,
-                    Color = cfg.color
+                local UIGradientStroke = library:create("UIGradient", {
+                    Parent = UIStroke,
+                    Color = ColorSequence.new(cfg.color[1], cfg.color[2]),
+                    Transparency = numseq({
+                        numkey(0, cfg.color_transparency[1]),
+                        numkey(1, cfg.color_transparency[2])
+                    })
                 })
-            end
+                
+                local UIOutline = library:create("UIStroke", {
+                    Parent = items.fov_circle,
+                    Color = cfg.outline_color[1],
+                    Thickness = cfg.thickness + (cfg.outline_thickness * 2),
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border,
+                    Enabled = cfg.outline
+                })
 
-            cfg.fov_connection = nil
+                local UIGradientOutline = library:create("UIGradient", {
+                    Parent = UIOutline,
+                    Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2]),
+                    Transparency = numseq({
+                        numkey(0, cfg.outline_transparency[1]),
+                        numkey(1, cfg.outline_transparency[2])
+                    })
+                })
+                
+                items.UICorner = UICorner
+                items.UIGradientFovCircle = UIGradientFovCircle
+                items.UIStroke = UIStroke
+                items.UIGradientStroke = UIGradientStroke
+                items.UIOutline = UIOutline
+                items.UIGradientOutline = UIGradientOutline
+            end
+            
+            local base_rotation = cfg.rotation
+            
             cfg.fov_connection = library:connection(run.RenderStepped, function()
                 if cfg.spin then
-                    items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
+                    items.circle.Rotation = base_rotation + ((items.circle.Rotation + cfg.spin_speed) % 360)
                 end
 
                 if cfg.visible then
@@ -639,146 +675,104 @@
                     cfg.radius = args.radius
                     items.circle.Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2)
                 end
-
+                
                 if args.color then
                     cfg.color = args.color
-                    items.uistroke.Color = cfg.color
-                    items.uistroke_uigradient.Color = ColorSequence.new(cfg.color)
+                    items.UIStroke.Color = cfg.color[1]
+                    items.UIGradientStroke.Color = rgbseq(cfg.color[1], cfg.color[2])
                 end
-
+                
+                if args.color_transparency then
+                    cfg.color_transparency = args.color_transparency
+                    items.UIGradientStroke.Transparency = numseq({
+                        numkey(0, cfg.color_transparency[1]),
+                        numkey(1, cfg.color_transparency[2])
+                    })
+                end
+                
                 if args.thickness then
                     cfg.thickness = args.thickness
-                    items.uistroke.Thickness = cfg.thickness
+                    items.UIStroke.Thickness = cfg.thickness
+                    items.UIOutline.Thickness = cfg.thickness + (cfg.outline_thickness * 2)
                 end
-
+                
                 if args.filled ~= nil then
                     cfg.filled = args.filled
-                    items.fov_circle.Visible = cfg.filled
+                    items.fov_circle.BackgroundTransparency = cfg.filled and cfg.fill_transparency or 1
                 end
-
-                if args.filled_color then
-                    cfg.fill_color = args.filled_color
+                
+                if args.fill_color then
+                    cfg.fill_color = args.fill_color
                     items.fov_circle.BackgroundColor3 = cfg.fill_color
                 end
-
+                
                 if args.fill_transparency then
                     cfg.fill_transparency = args.fill_transparency
-                    items.fov_circle.BackgroundTransparency = cfg.fill_transparency
-                    items.fov_circle_uigradient.Transparency = NumberSequence.new(cfg.fill_transparency)
-                end
 
+                    if cfg.filled then
+                        items.fov_circle.BackgroundTransparency = cfg.fill_transparency
+                    end
+
+                    items.UIGradientFovCircle.Transparency = numseq(cfg.fill_transparency)
+                end
+                
+                if args.outline ~= nil then
+                    cfg.outline = args.outline
+                    items.UIOutline.Enabled = cfg.outline
+                end
+                
+                if args.outline_color then
+                    cfg.outline_color = args.outline_color
+                    items.UIOutline.Color = cfg.outline_color[1]
+                    items.UIGradientOutline.Color = rgbseq(cfg.outline_color[1], cfg.outline_color[2])
+                end
+                
+                if args.outline_transparency then
+                    cfg.outline_transparency = args.outline_transparency
+                    items.UIGradientOutline.Transparency = numseq({
+                        numkey(0, cfg.outline_transparency[1]),
+                        numkey(1, cfg.outline_transparency[2])
+                    })
+                end
+                
+                if args.outline_thickness then
+                    cfg.outline_thickness = args.outline_thickness
+                    items.UIOutline.Thickness = cfg.thickness + (cfg.outline_thickness * 2)
+                end
+                
+                if args.rotation then
+                    cfg.rotation = args.rotation
+                    base_rotation = cfg.rotation
+
+                    if not cfg.spin then
+                        items.circle.Rotation = cfg.rotation
+                    end
+                end
+                
                 if args.spin ~= nil then
                     cfg.spin = args.spin
-                end
 
+                    if not cfg.spin then
+                        items.circle.Rotation = base_rotation
+                    end
+                end
+                
                 if args.spin_speed then
                     cfg.spin_speed = args.spin_speed
                 end
-
+                
                 if args.visible ~= nil then
+                    cfg.visible = args.visible
                     items.circle.Visible = args.visible
-                    items.fov_circle.Visible = args.visible
                 end
-
+                
                 if args.position then
-                    items.circle.Position = args.position
+                    cfg.position = args.position
                 end
             end
-
+            
             return cfg
         end
-
-		local tooltip_sgui = library:create("ScreenGui", {
-			Enabled = true,
-			Parent = gethui(),
-			Name = "",
-			DisplayOrder = 500, 
-		})
-
-		function library:tool_tip(options) 
-			local cfg = {
-				name = options.name or "hi", 
-				path = options.path or nil, 
-			}
-
-			if cfg.path then 
-				local watermark_outline = library:create("Frame", {
-					Parent = tooltip_sgui,
-					Name = "",
-					Size = dim2(0, 0, 0, 22),
-					Position = dim2(0, 500, 0, 300),
-					BorderColor3 = rgb(0, 0, 0),
-					BorderSizePixel = 0,
-					Visible = false,
-					AutomaticSize = Enum.AutomaticSize.X,
-					BackgroundColor3 = themes.preset.outline
-				})
-				
-				local watermark_inline = library:create("Frame", {
-					Parent = watermark_outline,
-					Name = "",
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = themes.preset.inline
-				})
-				
-				local watermark_background = library:create("Frame", {
-					Parent = watermark_inline,
-					Name = "",
-					Position = dim2(0, 1, 0, 1),
-					BorderColor3 = rgb(0, 0, 0),
-					Size = dim2(1, -2, 1, -2),
-					BorderSizePixel = 0,
-					BackgroundColor3 = rgb(255, 255, 255)
-				})
-				
-				local UIGradient = library:create("UIGradient", {
-					Parent = watermark_background,
-					Name = "",
-					Color = rgbseq{rgbkey(0, rgb(41, 41, 55)), rgbkey(1, rgb(35, 35, 47))}
-				}); library:apply_theme(UIGradient, "contrast", "Color")
-				
-				local text = library:create("TextLabel", {
-					Parent = watermark_background,
-					Name = "",
-					FontFace = library.font,
-					TextColor3 = themes.preset.text,
-					BorderColor3 = rgb(0, 0, 0),
-					Text = " " .. cfg.name .. " ",
-					Size = dim2(0, 0, 1, 0),
-					BackgroundTransparency = 1,
-					Position = dim2(0, 0, 0, -1),
-					BorderSizePixel = 0,
-					AutomaticSize = Enum.AutomaticSize.X,
-					TextSize = 12,
-					BackgroundColor3 = rgb(255, 255, 255)
-				})
-				
-				local UIStroke = library:create("UIStroke", {
-					Parent = text,
-					Name = "",
-					LineJoinMode = Enum.LineJoinMode.Miter
-				})
-
-				cfg.path.MouseEnter:Connect(function()
-					watermark_outline.Visible = true 
-				end)   
-
-				cfg.path.MouseLeave:Connect(function()
-					watermark_outline.Visible = false 
-				end)
-
-				library:connection(uis.InputChanged, function(input)
-					if watermark_outline.Visible and input.UserInputType == Enum.UserInputType.MouseMovement then
-						watermark_outline.Position = dim_offset(input.Position.X + 10, input.Position.Y + 10)
-					end
-				end)
-			end 
-			
-			return cfg
-		end 
 
 		function library:panel(options) 
 			local cfg = {
