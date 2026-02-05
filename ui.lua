@@ -569,7 +569,7 @@
 				thickness = options.thickness or 1,
 				filled = options.filled or false,
 				fill_color = options.fill_color or {rgb(255, 255, 255), rgb(255, 255, 255)},
-				fill_transparency = options.fill_transparency or {numkey(0, 0.95), numkey(1, 0.95)},
+				fill_transparency = options.fill_transparency or {0, 0},
 				spin = options.spin or false,
 				spin_speed = options.spin_speed or 1,
 				visible = options.visible or false,
@@ -651,7 +651,10 @@
 				local UIGradientFovCircle = library:create("UIGradient", {
 					Parent = items.fov_circle,
 					Color = rgbseq(cfg.fill_color[1], cfg.fill_color[2]),
-					Transparency = numseq(cfg.fill_transparency)
+					Transparency = numseq({
+						numkey(0, cfg.fill_transparency[1]),
+						numkey(1, cfg.fill_transparency[2])
+					})
 				})
 
 				local UIStroke = library:create("UIStroke", {
@@ -697,7 +700,6 @@
 				items.UIOutlineInner = UIOutlineInner
 				items.UIGradientOutlineInner = UIGradientOutlineInner
 			end
-			
 			
 			cfg.fov_connection = library:connection(run.RenderStepped, function()
 				if cfg.spin then
