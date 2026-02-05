@@ -569,14 +569,14 @@
                 thickness = options.thickness or 1,
                 filled = options.filled or false,
                 fill_color = options.filled_color or rgb(255, 255, 255),
-                fill_transparency = options.fill_transparency or {0, 0},
+                fill_transparency = options.fill_transparency or {numkey(0, 0), numkey(1, 0)},
                 spin = options.spin or false,
                 spin_speed = options.spin_speed or 1,
                 visible = options.visible or false,
                 position = options.position or dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
                 outline = options.outline or false,
                 outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
-                outline_transparency = options.outline_transparency or {0, 0},
+                outline_transparency = options.outline_transparency or {numkey(0, 0), numkey(1, 0)},
                 outline_thickness = options.outline_thickness or 1,
 
                 -- ignore
@@ -662,8 +662,8 @@
             cfg.fov_connection = library:connection(run.RenderStepped, function()
                 if cfg.spin then
                     items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
-                    strokeGradient.Rotation = (strokeGradient.Rotation + 0.5) % 360
-                    mainGradient.Rotation = (mainGradient.Rotation + 0.2) % 360
+                    items.UIGradientStroke.Rotation = (items.UIGradientStroke.Rotation + 0.5) % 360
+                    items.UIGradientFovCircle.Rotation = (items.UIGradientFovCircle.Rotation + 0.2) % 360
                 end
 
                 if cfg.visible then
