@@ -1559,10 +1559,12 @@
 
 			-- main window
 				local main_window = library:panel({
-					name = properties and properties.name or "Atlanta | ", 
+					name = properties and properties.name or "Atlanta | ",
 					size = dim2(0, 604, 0, 628),
 					position = dim2(0, (camera.ViewportSize.X / 2) - 302 - 96, 0, (camera.ViewportSize.Y / 2) - 421 - 12),
 					image = "rbxassetid://98823308062942",
+                    animated_name = properties and properties.animated_name or false,
+                    animation_speed = properties and properties.animation_speed or 1
 				})
 
 				local items = main_window.items
@@ -2313,7 +2315,7 @@
 					return 
 				end
 
-				local humanoid = character.Humanoid
+				local humanoid = character:FindFirstChildOfClass("Humanoid")
 				
 				local multiplier = humanoid.MaxHealth * math.abs(math.sin(tick() * 2)) / humanoid.MaxHealth
 				local color = flags[ "Health_Low" ].Color:Lerp( flags["Health_High"].Color, multiplier)
