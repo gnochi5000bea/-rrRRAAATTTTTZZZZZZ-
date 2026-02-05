@@ -600,8 +600,8 @@
                     Size = dim2(1, 0, 1, 0),
                     Position = dim2(0.5, 0, 0.5, 0),
                     AnchorPoint = vec2(0.5, 0.5),
-                    BackgroundColor3 = cfg.fill_color,
-                    BackgroundTransparency = cfg.filled and cfg.fill_transparency or 1,
+                    BackgroundColor3 = cfg.fill_color[1],
+                    BackgroundTransparency = cfg.filled and 0 or 1,
                     Visible = true,
                     ZIndex = 3
                 })
