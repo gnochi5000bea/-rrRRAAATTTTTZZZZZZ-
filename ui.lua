@@ -576,7 +576,7 @@
                 position = options.position or dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
                 outline = options.outline or false,
                 outline_color = options.outline_color or {rgb(0, 0, 0), rgb(0, 0, 0)},
-                outline_transparency = options.outline_transparency or {numkey(0, 0), numkey(1, 0)},
+                outline_transparency = options.outline_transparency or {0, 0},
                 outline_thickness = options.outline_thickness or 1,
 
                 -- ignore
