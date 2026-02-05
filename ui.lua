@@ -552,6 +552,142 @@
 	-- 
 
 	-- elements 
+        local fov_sgui = library:create("ScreenGui", {
+			Enabled = true,
+			Parent = gethui(),
+			Name = "",
+			DisplayOrder = 999999999, 
+		})
+
+        function library:fov_circle(options)
+            local cfg = {
+                radius = options.radius or 100,
+                color = options.color or rgb(255, 255, 255),
+                thickness = options.thickness or 1,
+                filled = options.filled or false,
+                fill_color = options.filled_color or rgb(255, 255, 255),
+                fill_transparency = options.fill_transparency or 0.5,
+                spin = options.spin or false,
+                spin_speed = options.spin_speed or 1,
+                visible = options.visible or false,
+                position = options.position or dim2(0, camera.ViewportSize.X / 2, 0, camera.ViewportSize.Y / 2),
+
+                -- ignore
+                items = {}
+            }
+
+            local items = cfg.items do 
+                items.circle = library:create("Frame", {
+                    Parent = fov_sgui,
+                    Name = "",
+                    Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2),
+                    Position = cfg.position,
+                    AnchorPoint = vec2(0.5, 0.5),
+                    BackgroundTransparency = 1,
+                    Visible = cfg.visible
+                })
+
+                items.fov_circle = library:create("Frame", {
+                    Parent = items.circle,
+                    Name = "",
+                    Size = dim2(1, 0, 1, 0),
+                    Position = dim2(0.5, 0, 0.5, 0),
+                    AnchorPoint = vec2(0.5, 0.5),
+                    BackgroundColor3 = cfg.fill_color,
+                    BackgroundTransparency = cfg.fill_transparency,
+                    Visible = cfg.visible,
+                    ZIndex = 3
+                })
+
+                local UICorner = library:create("UICorner", {
+                    Parent = items.fov_circle,
+                    CornerRadius = dim(1, 0)
+                })
+
+                items.fov_circle_uigradient = library:create("UIGradient", {
+                    Parent = items.fov_circle,
+                    Transparency = cfg.fill_transparency
+                })
+
+                items.uistroke = library:create("UIStroke", {
+                    Parent = items.fov_circle,
+                    Color = cfg.color,
+                    Thickness = cfg.thickness,
+                    ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                })
+
+                items.uistroke_uigradient = library:create("UIGradient", {
+                    Parent = items.uistroke,
+                    Transparency = cfg.fill_transparency,
+                    Color = cfg.color
+                })
+            end
+
+            cfg.fov_connection = nil
+            cfg.fov_connection = library:connection(run.RenderStepped, function()
+                if cfg.spin then
+                    items.circle.Rotation = (items.circle.Rotation + cfg.spin_speed) % 360
+                end
+
+                if cfg.visible then
+                    items.circle.Position = cfg.position
+                end
+            end)
+            
+            cfg.update_fov = function(args)
+                if args.radius then
+                    cfg.radius = args.radius
+                    items.circle.Size = dim2(0, cfg.radius * 2, 0, cfg.radius * 2)
+                end
+
+                if args.color then
+                    cfg.color = args.color
+                    items.uistroke.Color = cfg.color
+                    items.uistroke_uigradient.Color = ColorSequence.new(cfg.color)
+                end
+
+                if args.thickness then
+                    cfg.thickness = args.thickness
+                    items.uistroke.Thickness = cfg.thickness
+                end
+
+                if args.filled ~= nil then
+                    cfg.filled = args.filled
+                    items.fov_circle.Visible = cfg.filled
+                end
+
+                if args.filled_color then
+                    cfg.fill_color = args.filled_color
+                    items.fov_circle.BackgroundColor3 = cfg.fill_color
+                end
+
+                if args.fill_transparency then
+                    cfg.fill_transparency = args.fill_transparency
+                    items.fov_circle.BackgroundTransparency = cfg.fill_transparency
+                    items.fov_circle_uigradient.Transparency = NumberSequence.new(cfg.fill_transparency)
+                end
+
+                if args.spin ~= nil then
+                    cfg.spin = args.spin
+                end
+
+                if args.spin_speed then
+                    cfg.spin_speed = args.spin_speed
+                end
+
+                if args.visible ~= nil then
+                    items.circle.Visible = args.visible
+                    items.fov_circle.Visible = args.visible
+                end
+
+                if args.position then
+                    items.circle.Position = args.position
+                end
+            end
+
+            return cfg
+        end
+
 		local tooltip_sgui = library:create("ScreenGui", {
 			Enabled = true,
 			Parent = gethui(),
